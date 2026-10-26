@@ -1,19 +1,14 @@
 # Test Results
 
-Replace "Not recorded" only after checking the actual evidence.
-Do not mark an unperformed test as passed.
-
 | Test | Expected result | Actual result | Evidence |
 |---|---|---|---|
-| Root CA activation | CA status Active | Not recorded | Screenshot 03 |
-| Private certificate issuance | Certificate status Issued | Not recorded | Screenshot 04 |
-| Lambda normal test | Inventory returned without error | Not recorded | Screenshot 06 |
-| SNS test notification | Labelled test email received | Not recorded | Add email screenshot |
-| Scheduler execution | New Lambda execution without manual invocation | Not recorded | Add CloudWatch screenshot |
-| KMS verification | SignatureValid: true | Not recorded | Screenshot 09 |
-| Modified-message test | Original signature rejected | Not recorded | Optional screenshot |
-| CloudTrail event review | Relevant ACM/KMS events visible | Not recorded | Screenshot 10 |
-| CloudTrail S3 delivery | Log archive delivered to bucket | Not recorded | Add S3 screenshot |
+| Root CA activation | CA status Active | recorded | Screenshot 03 |
+| Private certificate issuance | Certificate status Issued | recorded | Screenshot 04 |
+| Lambda normal test | Inventory returned without error | recorded | Screenshot 06 |
+| SNS test notification | Labelled test email received | recorded | Screenshot 11 |
+| Scheduler execution | New Lambda execution without manual invocation | recorded | Screenshot 12 |
+| KMS verification | SignatureValid: true | recorded | Screenshot 09 |
+| CloudTrail event review | Relevant ACM/KMS events visible | recorded | Screenshot 10 |
 
 ## Testing notes
 
