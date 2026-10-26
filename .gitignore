@@ -1,0 +1,26 @@
+# Local credentials and secrets
+.aws/
+.env
+.env.*
+!.env.example
+*accessKeys*.csv
+*accesskeys*.csv
+credentials
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Terraform local state
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!example.tfvars
+
+# Python temporary files
+__pycache__/
+*.pyc
+
+# Raw audit archives
+*.json.gz
