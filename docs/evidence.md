@@ -28,7 +28,7 @@ Account-specific details are redacted where appropriate.
 ![Daily schedule](../Screenshots/08-eventbridge-daily-schedule.png)
 
 ## 9. KMS signature verification
-![KMS verification](../screenshots/09-kms-signature-verified.png)
+![KMS verification](../Screenshots/09-kms-signature-verified.png)
 
 ## 10. CloudTrail audit events
-![CloudTrail audit events](../screenshots/10-cloudtrail-pki-audit-events.png)
+![CloudTrail audit events](../Screenshots/10-cloudtrail-pki-audit-events.png)
