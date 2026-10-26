@@ -1,0 +1,113 @@
+import json
+import math
+import os
+from datetime import datetime, timezone
+
+import boto3
+
+acm = boto3.client("acm")
+sns = boto3.client("sns")
+
+SNS_TOPIC_ARN = os.environ["SNS_TOPIC_ARN"]
+ALERT_DAYS = int(os.environ.get("ALERT_DAYS", "30"))
+
+
+def lambda_handler(event, context):
+    certificates = []
+    alerts = []
+    now = datetime.now(timezone.utc)
+
+    paginator = acm.get_paginator("list_certificates")
+
+    for page in paginator.paginate():
+        for summary in page.get("CertificateSummaryList", []):
+            arn = summary["CertificateArn"]
+
+            cert = acm.describe_certificate(
+                CertificateArn=arn
+            )["Certificate"]
+
+            status = cert.get("Status")
+            not_after = cert.get("NotAfter")
+            renewal_summary = cert.get("RenewalSummary", {})
+
+            days_remaining = None
+            if not_after is not None:
+                days_remaining = math.floor(
+                    (not_after - now).total_seconds() / 86400
+                )
+
+            record = {
+                "certificate_arn": arn,
+                "domain": cert.get("DomainName"),
+                "type": cert.get("Type"),
+                "status": status,
+                "renewal_eligibility": cert.get("RenewalEligibility"),
+                "renewal_status": renewal_summary.get("RenewalStatus"),
+                "not_after": (
+                    not_after.isoformat() if not_after else None
+                ),
+                "days_remaining": days_remaining
+            }
+
+            certificates.append(record)
+            reasons = []
+
+            if days_remaining is not None:
+                if days_remaining <= ALERT_DAYS:
+                    reasons.append(
+                        f"Certificate has {days_remaining} days remaining"
+                    )
+
+            if status in (
+                "PENDING_VALIDATION",
+                "EXPIRED",
+                "FAILED",
+                "REVOKED",
+                "VALIDATION_TIMED_OUT"
+            ):
+                reasons.append(f"Certificate status: {status}")
+
+            if renewal_summary.get("RenewalStatus") == "FAILED":
+                reasons.append("Certificate renewal failed")
+
+            if reasons:
+                alerts.append({
+                    **record,
+                    "reasons": reasons
+                })
+
+    report = {
+        "generated_at": now.isoformat(),
+        "total_certificates": len(certificates),
+        "total_alerts": len(alerts),
+        "certificates": certificates,
+        "alerts": alerts
+    }
+
+    print(json.dumps(report, indent=2))
+
+    # This flag lets you test email delivery without changing certificates.
+    test_notification = event.get("test_notification") is True
+
+    if alerts or test_notification:
+        message = {
+            "test_notification": test_notification,
+            **report
+        }
+
+        sns.publish(
+            TopicArn=SNS_TOPIC_ARN,
+            Subject=(
+                "TEST: AWS Certificate Monitor"
+                if test_notification
+                else "AWS Certificate Lifecycle Alert"
+            ),
+            Message=json.dumps(message, indent=2)
+        )
+
+    return {
+        "total_certificates": len(certificates),
+        "total_alerts": len(alerts),
+        "notification_sent": bool(alerts or test_notification)
+    }
